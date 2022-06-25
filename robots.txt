@@ -1,1 +1,1 @@
-Sitemap: https://fastpages.fast.ai/sitemap.xml
+Sitemap: https://dennislrhodes.github.io/portfolio/sitemap.xml
