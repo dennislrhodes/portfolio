@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Building a Relational Database Part 1 | Dennis Rhodes</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Building a Relational Database Part 1" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Data Science Professional Specializing in GIS and Cloud." />
+<meta property="og:description" content="Data Science Professional Specializing in GIS and Cloud." />
+<link rel="canonical" href="https://dennislrhodes.github.io/portfolio/2022/07/08/Database-Design-Part-1.html" />
+<meta property="og:url" content="https://dennislrhodes.github.io/portfolio/2022/07/08/Database-Design-Part-1.html" />
+<meta property="og:site_name" content="Dennis Rhodes" />
+<meta property="og:image" content="https://dennislrhodes.github.io/portfolio/images/PostgresSQL.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-07-08T00:00:00-05:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://dennislrhodes.github.io/portfolio/images/PostgresSQL.png" />
+<meta property="twitter:title" content="Building a Relational Database Part 1" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-07-08T00:00:00-05:00","datePublished":"2022-07-08T00:00:00-05:00","description":"Data Science Professional Specializing in GIS and Cloud.","headline":"Building a Relational Database Part 1","image":"https://dennislrhodes.github.io/portfolio/images/PostgresSQL.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://dennislrhodes.github.io/portfolio/2022/07/08/Database-Design-Part-1.html"},"url":"https://dennislrhodes.github.io/portfolio/2022/07/08/Database-Design-Part-1.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/portfolio/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://dennislrhodes.github.io/portfolio/feed.xml" title="Dennis Rhodes" /><link rel="shortcut icon" type="image/x-icon" href="/portfolio/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/portfolio/">Dennis Rhodes</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/portfolio/about/">About Me</a><a class="page-link" href="/portfolio/search/">Search</a><a class="page-link" href="/portfolio/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Building a Relational Database Part 1</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-07-08T00:00:00-05:00" itemprop="datePublished">
+        Jul 8, 2022
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      4 min read
+    
+</span></p>
+
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-justify-center">
+          <div class="px-2">
+
+    <a href="https://github.com/dennislrhodes/portfolio/tree/master/_notebooks/2022-7-9-Database-Design-Part-1.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/portfolio/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/dennislrhodes/portfolio/master?filepath=_notebooks%2F2022-7-9-Database-Design-Part-1.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/portfolio/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/dennislrhodes/portfolio/blob/master/_notebooks/2022-7-9-Database-Design-Part-1.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/portfolio/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+          <div class="px-2">
+  <a href="https://deepnote.com/launch?url=https%3A%2F%2Fgithub.com%2Fdennislrhodes%2Fportfolio%2Fblob%2Fmaster%2F_notebooks%2F2022-7-9-Database-Design-Part-1.ipynb" target="_blank">
+      <img class="notebook-badge-image" src="/portfolio/assets/badges/deepnote.svg" alt="Launch in Deepnote"/>
+  </a>
+</div>
+
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h1"><a href="#Project-Description">Project Description </a>
+<ul>
+<li class="toc-entry toc-h2"><a href="#Dataset">Dataset </a></li>
+<li class="toc-entry toc-h2"><a href="#Dataset-exploration">Dataset exploration </a></li>
+<li class="toc-entry toc-h2"><a href="#Design-an-Entity-Relationship-Model-for-the-Chicago-Crime-Dataset">Design an Entity Relationship Model for the Chicago Crime Dataset </a></li>
+<li class="toc-entry toc-h2"><a href="#Final-ERD">Final ERD </a></li>
+<li class="toc-entry toc-h2"><a href="#-Part-I-ends-here"> Part-I ends here </a></li>
+</ul>
+</li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2022-7-9-Database-Design-Part-1.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Project-Description">
+<a class="anchor" href="#Project-Description" aria-hidden="true"><span class="octicon octicon-link"></span></a>Project Description<a class="anchor-link" href="#Project-Description"> </a>
+</h1>
+<p>In this project, I explore Chicago Crime Dataset and implement a relational database for storing the data. The key tasks for this project are as follows:</p>
+<ol>
+<li>Indentify the features (attributes) in Chicago Crime dataset and design an entity-relationship model</li>
+<li>Refine the model and convert each relation to 3NF (if required)</li>
+<li>Using DDL implement the relations in a postgres server</li>
+<li>Load the given data to the relations</li>
+<li>Execute some interesting queries on the relations</li>
+</ol>
+<h2 id="Dataset">
+<a class="anchor" href="#Dataset" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dataset<a class="anchor-link" href="#Dataset"> </a>
+</h2>
+<ul>
+<li>Dataset URL: <strong>/dsa/data/DSA-7030/Chicago-Crime-Sample-2012.csv</strong>
+</li>
+<li>Dataset Description: <a href="./ChicagoData-Description.pdf">pdf</a>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Dataset-exploration">
+<a class="anchor" href="#Dataset-exploration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Dataset exploration<a class="anchor-link" href="#Dataset-exploration"> </a>
+</h2>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="n">datapath</span> <span class="o">=</span> <span class="s2">"/dsa/data/DSA-7030/Chicago-Crime-Sample-2012-updated.csv"</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">datapath</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>&lt;class 'pandas.core.frame.DataFrame'&gt;
+Int64Index: 336149 entries, 12236659 to 9998136
+Data columns (total 21 columns):
+Case Number             336148 non-null object
+Date                    336149 non-null object
+Block                   336149 non-null object
+IUCR                    336149 non-null object
+Primary Type            336149 non-null object
+Description             336149 non-null object
+Location Description    335702 non-null object
+Arrest                  336149 non-null bool
+Domestic                336149 non-null bool
+Beat                    336149 non-null int64
+District                336149 non-null int64
+Ward                    336142 non-null float64
+Community Area          336123 non-null float64
+FBI Code                336149 non-null object
+X Coordinate            335446 non-null float64
+Y Coordinate            335446 non-null float64
+Year                    336149 non-null int64
+Updated On              336149 non-null object
+Latitude                335446 non-null float64
+Longitude               335446 non-null float64
+Location                335446 non-null object
+dtypes: bool(2), float64(6), int64(3), object(10)
+memory usage: 51.9+ MB
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Case Number</th>
+      <th>Date</th>
+      <th>Block</th>
+      <th>IUCR</th>
+      <th>Primary Type</th>
+      <th>Description</th>
+      <th>Location Description</th>
+      <th>Arrest</th>
+      <th>Domestic</th>
+      <th>Beat</th>
+      <th>...</th>
+      <th>Ward</th>
+      <th>Community Area</th>
+      <th>FBI Code</th>
+      <th>X Coordinate</th>
+      <th>Y Coordinate</th>
+      <th>Year</th>
+      <th>Updated On</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+      <th>Location</th>
+    </tr>
+    <tr>
+      <th>ID</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>12236659</th>
+      <td>JD449284</td>
+      <td>11/27/2012 06:00:00 PM</td>
+      <td>028XX W BELDEN AVE</td>
+      <td>0266</td>
+      <td>CRIMINAL SEXUAL ASSAULT</td>
+      <td>PREDATORY</td>
+      <td>RESIDENCE</td>
+      <td>False</td>
+      <td>False</td>
+      <td>1414</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>22.0</td>
+      <td>02</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2012</td>
+      <td>12/05/2020 03:46:44 PM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>12214909</th>
+      <td>JD424223</td>
+      <td>09/15/2012 01:30:00 PM</td>
+      <td>045XX W CERMAK RD</td>
+      <td>0620</td>
+      <td>BURGLARY</td>
+      <td>UNLAWFUL ENTRY</td>
+      <td>OTHER (SPECIFY)</td>
+      <td>False</td>
+      <td>False</td>
+      <td>1012</td>
+      <td>...</td>
+      <td>24.0</td>
+      <td>29.0</td>
+      <td>05</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2012</td>
+      <td>12/05/2020 03:44:06 PM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>12235566</th>
+      <td>JD447838</td>
+      <td>01/01/2012 12:01:00 AM</td>
+      <td>031XX W 44TH ST</td>
+      <td>1752</td>
+      <td>OFFENSE INVOLVING CHILDREN</td>
+      <td>AGGRAVATED CRIMINAL SEXUAL ABUSE BY FAMILY MEMBER</td>
+      <td>RESIDENCE</td>
+      <td>False</td>
+      <td>False</td>
+      <td>922</td>
+      <td>...</td>
+      <td>15.0</td>
+      <td>58.0</td>
+      <td>17</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2012</td>
+      <td>12/03/2020 03:51:39 PM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>12234792</th>
+      <td>JD447109</td>
+      <td>12/07/2012 12:00:00 PM</td>
+      <td>107XX S MORGAN ST</td>
+      <td>1153</td>
+      <td>DECEPTIVE PRACTICE</td>
+      <td>FINANCIAL IDENTITY THEFT OVER $ 300</td>
+      <td>RESIDENCE</td>
+      <td>False</td>
+      <td>False</td>
+      <td>2234</td>
+      <td>...</td>
+      <td>34.0</td>
+      <td>75.0</td>
+      <td>11</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2012</td>
+      <td>12/02/2020 03:56:38 PM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>12230182</th>
+      <td>JD441224</td>
+      <td>02/27/2012 06:50:00 PM</td>
+      <td>017XX W BERWYN AVE</td>
+      <td>1153</td>
+      <td>DECEPTIVE PRACTICE</td>
+      <td>FINANCIAL IDENTITY THEFT OVER $ 300</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>False</td>
+      <td>2012</td>
+      <td>...</td>
+      <td>40.0</td>
+      <td>77.0</td>
+      <td>11</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2012</td>
+      <td>11/26/2020 03:48:35 PM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 21 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Case Number</th>
+      <th>Date</th>
+      <th>Block</th>
+      <th>IUCR</th>
+      <th>Primary Type</th>
+      <th>Description</th>
+      <th>Location Description</th>
+      <th>Arrest</th>
+      <th>Domestic</th>
+      <th>Beat</th>
+      <th>...</th>
+      <th>Ward</th>
+      <th>Community Area</th>
+      <th>FBI Code</th>
+      <th>X Coordinate</th>
+      <th>Y Coordinate</th>
+      <th>Year</th>
+      <th>Updated On</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+      <th>Location</th>
+    </tr>
+    <tr>
+      <th>ID</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>9984444</th>
+      <td>HY173771</td>
+      <td>10/11/2012 06:00:00 AM</td>
+      <td>076XX S COLFAX AVE</td>
+      <td>1153</td>
+      <td>DECEPTIVE PRACTICE</td>
+      <td>FINANCIAL IDENTITY THEFT OVER $ 300</td>
+      <td>APARTMENT</td>
+      <td>False</td>
+      <td>False</td>
+      <td>421</td>
+      <td>...</td>
+      <td>7.0</td>
+      <td>43.0</td>
+      <td>11</td>
+      <td>1194850.0</td>
+      <td>1854806.0</td>
+      <td>2012</td>
+      <td>02/10/2018 03:50:01 PM</td>
+      <td>41.756505</td>
+      <td>-87.561474</td>
+      <td>(41.756504746, -87.561473501)</td>
+    </tr>
+    <tr>
+      <th>9987208</th>
+      <td>HY177204</td>
+      <td>12/15/2012 09:00:00 AM</td>
+      <td>067XX S PERRY AVE</td>
+      <td>0910</td>
+      <td>MOTOR VEHICLE THEFT</td>
+      <td>AUTOMOBILE</td>
+      <td>STREET</td>
+      <td>False</td>
+      <td>False</td>
+      <td>722</td>
+      <td>...</td>
+      <td>6.0</td>
+      <td>69.0</td>
+      <td>07</td>
+      <td>1176558.0</td>
+      <td>1860300.0</td>
+      <td>2012</td>
+      <td>02/10/2018 03:50:01 PM</td>
+      <td>41.772012</td>
+      <td>-87.628344</td>
+      <td>(41.772011702, -87.628344479)</td>
+    </tr>
+    <tr>
+      <th>9990541</th>
+      <td>HY180702</td>
+      <td>02/07/2012 09:00:00 AM</td>
+      <td>010XX N HONORE ST</td>
+      <td>1153</td>
+      <td>DECEPTIVE PRACTICE</td>
+      <td>FINANCIAL IDENTITY THEFT OVER $ 300</td>
+      <td>RESIDENCE</td>
+      <td>False</td>
+      <td>False</td>
+      <td>1212</td>
+      <td>...</td>
+      <td>1.0</td>
+      <td>24.0</td>
+      <td>11</td>
+      <td>1163877.0</td>
+      <td>1906994.0</td>
+      <td>2012</td>
+      <td>02/09/2018 03:44:29 PM</td>
+      <td>41.900421</td>
+      <td>-87.673514</td>
+      <td>(41.900420776, -87.673514317)</td>
+    </tr>
+    <tr>
+      <th>9991722</th>
+      <td>HY181590</td>
+      <td>04/01/2012 12:01:00 AM</td>
+      <td>019XX S DRAKE AVE</td>
+      <td>1153</td>
+      <td>DECEPTIVE PRACTICE</td>
+      <td>FINANCIAL IDENTITY THEFT OVER $ 300</td>
+      <td>APARTMENT</td>
+      <td>False</td>
+      <td>False</td>
+      <td>1024</td>
+      <td>...</td>
+      <td>24.0</td>
+      <td>29.0</td>
+      <td>11</td>
+      <td>1153060.0</td>
+      <td>1890087.0</td>
+      <td>2012</td>
+      <td>02/09/2018 03:44:29 PM</td>
+      <td>41.854248</td>
+      <td>-87.713694</td>
+      <td>(41.854247595, -87.713694133)</td>
+    </tr>
+    <tr>
+      <th>9998136</th>
+      <td>HY188115</td>
+      <td>01/01/2012 09:00:00 AM</td>
+      <td>045XX W WRIGHTWOOD AVE</td>
+      <td>1153</td>
+      <td>DECEPTIVE PRACTICE</td>
+      <td>FINANCIAL IDENTITY THEFT OVER $ 300</td>
+      <td>RESIDENCE</td>
+      <td>False</td>
+      <td>False</td>
+      <td>2521</td>
+      <td>...</td>
+      <td>31.0</td>
+      <td>20.0</td>
+      <td>11</td>
+      <td>1145496.0</td>
+      <td>1917131.0</td>
+      <td>2012</td>
+      <td>02/09/2018 03:44:29 PM</td>
+      <td>41.928606</td>
+      <td>-87.740772</td>
+      <td>(41.928605829, -87.740771814)</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 21 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>(336149, 21)
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Case Number               1
+Date                      0
+Block                     0
+IUCR                      0
+Primary Type              0
+Description               0
+Location Description    447
+Arrest                    0
+Domestic                  0
+Beat                      0
+District                  0
+Ward                      7
+Community Area           26
+FBI Code                  0
+X Coordinate            703
+Y Coordinate            703
+Year                      0
+Updated On                0
+Latitude                703
+Longitude               703
+Location                703
+dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It appears the the vast majoirty of records do not have NAs.</p>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">'Case Number'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'HV328499'</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>      Case Number                    Date            Block  IUCR Primary Type  \
+ID                                                                              
+20454    HV328499  06/11/2012 12:25:00 AM  007XX W 50TH PL  0110     HOMICIDE   
+20455    HV328499  06/11/2012 12:17:00 AM  007XX W 50TH PL  0110     HOMICIDE   
+
+               Description Location Description  Arrest  Domestic  Beat  ...  \
+ID                                                                       ...   
+20454  FIRST DEGREE MURDER               STREET    True     False   935  ...   
+20455  FIRST DEGREE MURDER               STREET   False     False   935  ...   
+
+       Ward  Community Area  FBI Code X Coordinate  Y Coordinate  Year  \
+ID                                                                       
+20454  20.0            61.0       01A    1172276.0     1871384.0  2012   
+20455  20.0            61.0       01A    1172276.0     1871384.0  2012   
+
+                   Updated On   Latitude  Longitude  \
+ID                                                    
+20454  06/20/2020 03:48:45 PM  41.802523 -87.643715   
+20455  06/20/2020 03:48:45 PM  41.802523 -87.643715   
+
+                            Location  
+ID                                    
+20454  (41.802522678, -87.643715019)  
+20455  (41.802522678, -87.643715019)  
+
+[2 rows x 21 columns]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Design-an-Entity-Relationship-Model-for-the-Chicago-Crime-Dataset">
+<a class="anchor" href="#Design-an-Entity-Relationship-Model-for-the-Chicago-Crime-Dataset" aria-hidden="true"><span class="octicon octicon-link"></span></a>Design an Entity Relationship Model for the Chicago Crime Dataset<a class="anchor-link" href="#Design-an-Entity-Relationship-Model-for-the-Chicago-Crime-Dataset"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Crime_Report:</p>
+
+<pre><code>Case_ID PK
+Case Number 
+Crime_ID FK                  
+Location_ID FK
+Arrest                  
+Domestic                
+Date                    
+Year                    
+Updated On              
+
+</code></pre>
+<p>Crime:</p>
+
+<pre><code>Crime_ID PK
+IUCR                    
+FBI Code                
+Primary Type            
+Description             
+
+</code></pre>
+<p>Location:</p>
+
+<pre><code>Location_ID PK               
+Location Description    
+Block                   
+Beat                    
+District                
+Ward                    
+Community Area          
+Latitude                
+Longitude               
+X Coordinate            
+Y Coordinate            
+
+</code></pre>
+<p>I created IDs for each group to account for messiness of the data.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Final-ERD">
+<a class="anchor" href="#Final-ERD" aria-hidden="true"><span class="octicon octicon-link"></span></a>Final ERD<a class="anchor-link" href="#Final-ERD"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="./Crime_ERD_Updated.png" alt="Crime_ERD"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="-Part-I-ends-here">
+<a class="anchor" href="#-Part-I-ends-here" aria-hidden="true"><span class="octicon octicon-link"></span></a><center> Part-I ends here</center>
+<a class="anchor-link" href="#-Part-I-ends-here"> </a>
+</h2>
+</div>
+</div>
+</div>
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="dennislrhodes/portfolio"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/portfolio/2022/07/08/Database-Design-Part-1.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/portfolio/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/portfolio/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/portfolio/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Data Science Professional Specializing in GIS and Cloud.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/dennislrhodes" target="_blank" title="dennislrhodes"><svg class="svg-icon grey"><use xlink:href="/portfolio/assets/minima-social-icons.svg#github"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
