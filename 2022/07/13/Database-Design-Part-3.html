@@ -1,0 +1,3397 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="twitter:card" content="summary_large_image" /><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Building a Relational Database Part 3 | Dennis Rhodes</title>
+<meta name="generator" content="Jekyll v4.1.1" />
+<meta property="og:title" content="Building a Relational Database Part 3" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Data Science Professional Specializing in GIS and Cloud." />
+<meta property="og:description" content="Data Science Professional Specializing in GIS and Cloud." />
+<link rel="canonical" href="https://dennislrhodes.github.io/portfolio/2022/07/13/Database-Design-Part-3.html" />
+<meta property="og:url" content="https://dennislrhodes.github.io/portfolio/2022/07/13/Database-Design-Part-3.html" />
+<meta property="og:site_name" content="Dennis Rhodes" />
+<meta property="og:image" content="https://dennislrhodes.github.io/portfolio/images/PostgresSQL.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-07-13T00:00:00-05:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://dennislrhodes.github.io/portfolio/images/PostgresSQL.png" />
+<meta property="twitter:title" content="Building a Relational Database Part 3" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2022-07-13T00:00:00-05:00","datePublished":"2022-07-13T00:00:00-05:00","description":"Data Science Professional Specializing in GIS and Cloud.","headline":"Building a Relational Database Part 3","image":"https://dennislrhodes.github.io/portfolio/images/PostgresSQL.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://dennislrhodes.github.io/portfolio/2022/07/13/Database-Design-Part-3.html"},"url":"https://dennislrhodes.github.io/portfolio/2022/07/13/Database-Design-Part-3.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/portfolio/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://dennislrhodes.github.io/portfolio/feed.xml" title="Dennis Rhodes" /><link rel="shortcut icon" type="image/x-icon" href="/portfolio/images/favicon.ico"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/15.2.0/primer.css" integrity="sha512-xTz2ys4coGAOz8vuV1NcQBkgVmKhsSEtjbqyMJbBHRplFuvKIUo6xhLHpAyPt9mfR6twHJgn9OgVLuqOvjeBhg==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/portfolio/">Dennis Rhodes</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/portfolio/about/">About Me</a><a class="page-link" href="/portfolio/search/">Search</a><a class="page-link" href="/portfolio/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Building a Relational Database Part 3</h1><p class="post-meta post-meta-title"><time class="dt-published" datetime="2022-07-13T00:00:00-05:00" itemprop="datePublished">
+        Jul 13, 2022
+      </time>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      12 min read
+    
+</span></p>
+
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-justify-center">
+          <div class="px-2">
+
+    <a href="https://github.com/dennislrhodes/portfolio/tree/master/_notebooks/2022-7-9-Database-Design-Part-3.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/portfolio/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/dennislrhodes/portfolio/master?filepath=_notebooks%2F2022-7-9-Database-Design-Part-3.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/portfolio/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/dennislrhodes/portfolio/blob/master/_notebooks/2022-7-9-Database-Design-Part-3.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/portfolio/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+          <div class="px-2">
+  <a href="https://deepnote.com/launch?url=https%3A%2F%2Fgithub.com%2Fdennislrhodes%2Fportfolio%2Fblob%2Fmaster%2F_notebooks%2F2022-7-9-Database-Design-Part-3.ipynb" target="_blank">
+      <img class="notebook-badge-image" src="/portfolio/assets/badges/deepnote.svg" alt="Launch in Deepnote"/>
+  </a>
+</div>
+
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul id="toc" class="section-nav">
+<li class="toc-entry toc-h2"><a href="#Chicago-Crime-Data-Analysis">Chicago Crime Data Analysis </a>
+<ul>
+<li class="toc-entry toc-h3"><a href="#How-many-different-types-of-location_decription-that-have-“residence”-or-“residential”?">How many different types of location_decription that have “residence” or “residential”? </a></li>
+<li class="toc-entry toc-h3"><a href="#Find-the-primary-type-happened-on-13th-of-February.">Find the primary type happened on 13th of February. </a></li>
+<li class="toc-entry toc-h3"><a href="#Which-month-has-the-largest-number-of-thefts?">Which month has the largest number of thefts? </a></li>
+<li class="toc-entry toc-h3"><a href="#What-is-the-primary-type-of-crime-that-happened-the-most-during-Christmas-day?">What is the primary type of crime that happened the most during Christmas day? </a></li>
+<li class="toc-entry toc-h3"><a href="#What-is-the-number-of-crimes-per-month-in-each-community-area?-List-the-ones-with-an-average-number-over-500.">What is the number of crimes per month in each community area? List the ones with an average number over 500. </a></li>
+<li class="toc-entry toc-h3"><a href="#What-is-the-arrest-rate-for-domestic-battery?">What is the arrest rate for domestic battery? </a></li>
+<li class="toc-entry toc-h3"><a href="#What-are-the-five-most-common-crimes-in-Chicago?">What are the five most common crimes in Chicago? </a></li>
+<li class="toc-entry toc-h3"><a href="#Fetch-two-time-series-for-crime-count-and-arrest-count-per-month-from-the-database.-Plot-these-two-time-series-in-a-single-plot.">Fetch two time series for crime count and arrest count per month from the database. Plot these two time series in a single plot. </a></li>
+</ul>
+</li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2022-7-9-Database-Design-Part-3.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Chicago-Crime-Data-Analysis">
+<a class="anchor" href="#Chicago-Crime-Data-Analysis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Chicago Crime Data Analysis<a class="anchor-link" href="#Chicago-Crime-Data-Analysis"> </a>
+</h2>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">SSO</span> <span class="o">=</span> <span class="s2">"dlr6w3"</span>
+<span class="n">hostname</span> <span class="o">=</span> <span class="s2">"pgsql.dsa.lan"</span>
+<span class="n">database</span> <span class="o">=</span> <span class="s2">"dsa_student"</span>
+
+<span class="kn">import</span> <span class="nn">getpass</span>
+<span class="n">read_password</span> <span class="o">=</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getpass</span><span class="p">(</span><span class="s2">"Type password and hit enter"</span><span class="p">)</span>
+
+<span class="n">connection_string</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"postgres://</span><span class="si">{</span><span class="n">SSO</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">read_password</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="n">hostname</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">database</span><span class="si">}</span><span class="s2">"</span>
+
+<span class="o">%</span><span class="k">load_ext</span> sql
+<span class="o">%</span><span class="k">sql</span> $connection_string
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Type password and hit enter········
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>'Connected: dlr6w3@dsa_student'</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
+    select *
+    FROM location
+    limit 5;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+5 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>location_id</th>
+        <th>location_description</th>
+        <th>block</th>
+        <th>beat</th>
+        <th>district</th>
+        <th>ward</th>
+        <th>community_area</th>
+        <th>latitude</th>
+        <th>longitude</th>
+        <th>x_coordinate</th>
+        <th>y_coordinate</th>
+    </tr>
+    <tr>
+        <td>0</td>
+        <td>RESIDENCE</td>
+        <td>028XX W BELDEN AVE</td>
+        <td>1414</td>
+        <td>14</td>
+        <td>1.0</td>
+        <td>22.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>OTHER (SPECIFY)</td>
+        <td>045XX W CERMAK RD</td>
+        <td>1012</td>
+        <td>10</td>
+        <td>24.0</td>
+        <td>29.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>RESIDENCE</td>
+        <td>031XX W 44TH ST</td>
+        <td>922</td>
+        <td>9</td>
+        <td>15.0</td>
+        <td>58.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>RESIDENCE</td>
+        <td>107XX S MORGAN ST</td>
+        <td>2234</td>
+        <td>22</td>
+        <td>34.0</td>
+        <td>75.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+    </tr>
+    <tr>
+        <td>4</td>
+        <td>NA</td>
+        <td>017XX W BERWYN AVE</td>
+        <td>2012</td>
+        <td>20</td>
+        <td>40.0</td>
+        <td>77.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+        <td>-1.0</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
+    select *
+    FROM crime
+    limit 5;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+5 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>crime_id</th>
+        <th>iucr</th>
+        <th>fbi</th>
+        <th>primary_desc</th>
+        <th>description</th>
+    </tr>
+    <tr>
+        <td>0</td>
+        <td>0266</td>
+        <td>02</td>
+        <td>CRIMINAL SEXUAL ASSAULT</td>
+        <td>PREDATORY</td>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>0620</td>
+        <td>05</td>
+        <td>BURGLARY</td>
+        <td>UNLAWFUL ENTRY</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>1752</td>
+        <td>17</td>
+        <td>OFFENSE INVOLVING CHILDREN</td>
+        <td>AGGRAVATED CRIMINAL SEXUAL ABUSE BY FAMILY MEMBER</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>1153</td>
+        <td>11</td>
+        <td>DECEPTIVE PRACTICE</td>
+        <td>FINANCIAL IDENTITY THEFT OVER $ 300</td>
+    </tr>
+    <tr>
+        <td>4</td>
+        <td>0281</td>
+        <td>02</td>
+        <td>CRIMINAL SEXUAL ASSAULT</td>
+        <td>NON-AGGRAVATED</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
+    select *
+    FROM crime_report
+    limit 5;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+5 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>case_id</th>
+        <th>case_number</th>
+        <th>crime_id</th>
+        <th>location_id</th>
+        <th>arrest</th>
+        <th>domestic</th>
+        <th>case_date</th>
+        <th>case_year</th>
+        <th>updated_on</th>
+    </tr>
+    <tr>
+        <td>0</td>
+        <td>JD449284</td>
+        <td>0</td>
+        <td>0</td>
+        <td>False</td>
+        <td>False</td>
+        <td>2012-11-27 18:00:00</td>
+        <td>2012</td>
+        <td>2020-12-05 15:46:44</td>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>JD424223</td>
+        <td>1</td>
+        <td>1</td>
+        <td>False</td>
+        <td>False</td>
+        <td>2012-09-15 13:30:00</td>
+        <td>2012</td>
+        <td>2020-12-05 15:44:06</td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>JD447838</td>
+        <td>2</td>
+        <td>2</td>
+        <td>False</td>
+        <td>False</td>
+        <td>2012-01-01 00:01:00</td>
+        <td>2012</td>
+        <td>2020-12-03 15:51:39</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>JD447109</td>
+        <td>3</td>
+        <td>3</td>
+        <td>False</td>
+        <td>False</td>
+        <td>2012-12-07 12:00:00</td>
+        <td>2012</td>
+        <td>2020-12-02 15:56:38</td>
+    </tr>
+    <tr>
+        <td>4</td>
+        <td>JD441224</td>
+        <td>3</td>
+        <td>4</td>
+        <td>False</td>
+        <td>False</td>
+        <td>2012-02-27 18:50:00</td>
+        <td>2012</td>
+        <td>2020-11-26 15:48:35</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="How-many-different-types-of-location_decription-that-have-“residence”-or-“residential”?">
+<a class="anchor" href="#How-many-different-types-of-location_decription-that-have-%E2%80%9Cresidence%E2%80%9D-or-%E2%80%9Cresidential%E2%80%9D?" aria-hidden="true"><span class="octicon octicon-link"></span></a>How many different types of location_decription that have “residence” or “residential”?<a class="anchor-link" href="#How-many-different-types-of-location_decription-that-have-%E2%80%9Cresidence%E2%80%9D-or-%E2%80%9Cresidential%E2%80%9D?"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span> 
+    SELECT DISTINCT location_description
+    FROM location 
+    WHERE location_description LIKE '%RESIDEN%'
+    ;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+9 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>location_description</th>
+    </tr>
+    <tr>
+        <td>RESIDENCE - YARD (FRONT / BACK)</td>
+    </tr>
+    <tr>
+        <td>RESIDENTIAL YARD (FRONT/BACK)</td>
+    </tr>
+    <tr>
+        <td>RESIDENCE - PORCH / HALLWAY</td>
+    </tr>
+    <tr>
+        <td>RESIDENCE-GARAGE</td>
+    </tr>
+    <tr>
+        <td>RESIDENCE</td>
+    </tr>
+    <tr>
+        <td>COLLEGE/UNIVERSITY RESIDENCE HALL</td>
+    </tr>
+    <tr>
+        <td>DRIVEWAY - RESIDENTIAL</td>
+    </tr>
+    <tr>
+        <td>RESIDENCE PORCH/HALLWAY</td>
+    </tr>
+    <tr>
+        <td>PARKING LOT / GARAGE (NON RESIDENTIAL)</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span> 
+    SELECT COUNT(*)
+    FROM(
+    SELECT DISTINCT location_description
+    FROM location 
+    WHERE location_description LIKE'%RESIDEN%') as s1
+    ;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+1 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>count</th>
+    </tr>
+    <tr>
+        <td>9</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There are 9 different types of residential types.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Find-the-primary-type-happened-on-13th-of-February.">
+<a class="anchor" href="#Find-the-primary-type-happened-on-13th-of-February." aria-hidden="true"><span class="octicon octicon-link"></span></a>Find the primary type happened on 13th of February.<a class="anchor-link" href="#Find-the-primary-type-happened-on-13th-of-February."> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
+    SELECT primary_desc as primary_type, count(*)
+    FROM crime
+    JOIN crime_report
+    USING(crime_id)
+    WHERE case_date::date = '2012-2-13'
+    GROUP BY primary_desc
+    ORDER BY count desc;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+21 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>primary_type</th>
+        <th>count</th>
+    </tr>
+    <tr>
+        <td>THEFT</td>
+        <td>163</td>
+    </tr>
+    <tr>
+        <td>NARCOTICS</td>
+        <td>116</td>
+    </tr>
+    <tr>
+        <td>BATTERY</td>
+        <td>103</td>
+    </tr>
+    <tr>
+        <td>CRIMINAL DAMAGE</td>
+        <td>59</td>
+    </tr>
+    <tr>
+        <td>MOTOR VEHICLE THEFT</td>
+        <td>50</td>
+    </tr>
+    <tr>
+        <td>BURGLARY</td>
+        <td>46</td>
+    </tr>
+    <tr>
+        <td>OTHER OFFENSE</td>
+        <td>45</td>
+    </tr>
+    <tr>
+        <td>ASSAULT</td>
+        <td>39</td>
+    </tr>
+    <tr>
+        <td>DECEPTIVE PRACTICE</td>
+        <td>36</td>
+    </tr>
+    <tr>
+        <td>CRIMINAL TRESPASS</td>
+        <td>26</td>
+    </tr>
+    <tr>
+        <td>ROBBERY</td>
+        <td>19</td>
+    </tr>
+    <tr>
+        <td>WEAPONS VIOLATION</td>
+        <td>8</td>
+    </tr>
+    <tr>
+        <td>PUBLIC PEACE VIOLATION</td>
+        <td>7</td>
+    </tr>
+    <tr>
+        <td>CRIM SEXUAL ASSAULT</td>
+        <td>2</td>
+    </tr>
+    <tr>
+        <td>PROSTITUTION</td>
+        <td>2</td>
+    </tr>
+    <tr>
+        <td>SEX OFFENSE</td>
+        <td>2</td>
+    </tr>
+    <tr>
+        <td>INTERFERENCE WITH PUBLIC OFFICER</td>
+        <td>2</td>
+    </tr>
+    <tr>
+        <td>INTIMIDATION</td>
+        <td>1</td>
+    </tr>
+    <tr>
+        <td>KIDNAPPING</td>
+        <td>1</td>
+    </tr>
+    <tr>
+        <td>LIQUOR LAW VIOLATION</td>
+        <td>1</td>
+    </tr>
+    <tr>
+        <td>OFFENSE INVOLVING CHILDREN</td>
+        <td>1</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Which-month-has-the-largest-number-of-thefts?">
+<a class="anchor" href="#Which-month-has-the-largest-number-of-thefts?" aria-hidden="true"><span class="octicon octicon-link"></span></a>Which month has the largest number of thefts?<a class="anchor-link" href="#Which-month-has-the-largest-number-of-thefts?"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
+    SELECT EXTRACT(MONTH FROM case_date) as month, count(*)
+    FROM crime
+    JOIN crime_report
+    USING(crime_id) 
+    WHERE primary_desc LIKE '%THEFT%' OR description LIKE '%THEFT%'
+    GROUP BY month
+    ORDER BY count desc
+    limit 1;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+1 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>month</th>
+        <th>count</th>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>9034</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>July (7.0) is the month with the most amount of thefts with 9034.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="What-is-the-primary-type-of-crime-that-happened-the-most-during-Christmas-day?">
+<a class="anchor" href="#What-is-the-primary-type-of-crime-that-happened-the-most-during-Christmas-day?" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is the primary type of crime that happened the most during Christmas day?<a class="anchor-link" href="#What-is-the-primary-type-of-crime-that-happened-the-most-during-Christmas-day?"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> <span class="o">%%</span><span class="k">sql</span>
+    SELECT primary_desc as primary_type, count(*)
+    FROM crime
+    JOIN crime_report
+    USING(crime_id)
+    WHERE case_date::date = '2012-12-25'
+    GROUP BY primary_desc
+    ORDER BY count desc
+    limit 1;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+1 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>primary_type</th>
+        <th>count</th>
+    </tr>
+    <tr>
+        <td>BATTERY</td>
+        <td>160</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The primary type that occured the most on Christmas was battery with 160 counts.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="What-is-the-number-of-crimes-per-month-in-each-community-area?-List-the-ones-with-an-average-number-over-500.">
+<a class="anchor" href="#What-is-the-number-of-crimes-per-month-in-each-community-area?-List-the-ones-with-an-average-number-over-500." aria-hidden="true"><span class="octicon octicon-link"></span></a>What is the number of crimes per month in each community area? List the ones with an average number over 500.<a class="anchor-link" href="#What-is-the-number-of-crimes-per-month-in-each-community-area?-List-the-ones-with-an-average-number-over-500."> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span> 
+    SELECT * 
+    FROM(
+    SELECT *, AVG(number_of_crimes) OVER (PARTITION BY community_area) as average
+    FROM (
+    SELECT EXTRACT(MONTH FROM case_date) as month, community_area, count(*) as number_of_crimes
+    FROM crime
+    JOIN crime_report
+    USING(crime_id) 
+    JOIN location
+    USING(location_id)
+    GROUP BY community_area, month
+    ) AS s1
+    ) AS s2
+    WHERE average &gt; 500;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+264 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>month</th>
+        <th>community_area</th>
+        <th>number_of_crimes</th>
+        <th>average</th>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>6.0</td>
+        <td>500</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>6.0</td>
+        <td>447</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>6.0</td>
+        <td>620</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>6.0</td>
+        <td>577</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>6.0</td>
+        <td>662</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>6.0</td>
+        <td>789</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>6.0</td>
+        <td>831</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>6.0</td>
+        <td>807</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>6.0</td>
+        <td>693</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>6.0</td>
+        <td>659</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>6.0</td>
+        <td>553</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>6.0</td>
+        <td>561</td>
+        <td>641.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>8.0</td>
+        <td>788</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>8.0</td>
+        <td>772</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>8.0</td>
+        <td>910</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>8.0</td>
+        <td>880</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>8.0</td>
+        <td>866</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>8.0</td>
+        <td>1121</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>8.0</td>
+        <td>1129</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>8.0</td>
+        <td>1135</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>8.0</td>
+        <td>1042</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>8.0</td>
+        <td>871</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>8.0</td>
+        <td>840</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>8.0</td>
+        <td>940</td>
+        <td>941.1666666666666667</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>19.0</td>
+        <td>526</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>19.0</td>
+        <td>454</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>19.0</td>
+        <td>495</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>19.0</td>
+        <td>488</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>19.0</td>
+        <td>553</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>19.0</td>
+        <td>650</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>19.0</td>
+        <td>561</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>19.0</td>
+        <td>578</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>19.0</td>
+        <td>573</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>19.0</td>
+        <td>516</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>19.0</td>
+        <td>465</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>19.0</td>
+        <td>513</td>
+        <td>531.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>22.0</td>
+        <td>518</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>22.0</td>
+        <td>466</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>22.0</td>
+        <td>514</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>22.0</td>
+        <td>601</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>22.0</td>
+        <td>605</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>22.0</td>
+        <td>603</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>22.0</td>
+        <td>709</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>22.0</td>
+        <td>617</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>22.0</td>
+        <td>569</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>22.0</td>
+        <td>553</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>22.0</td>
+        <td>533</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>22.0</td>
+        <td>512</td>
+        <td>566.6666666666666667</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>23.0</td>
+        <td>983</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>23.0</td>
+        <td>891</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>23.0</td>
+        <td>941</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>23.0</td>
+        <td>903</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>23.0</td>
+        <td>975</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>23.0</td>
+        <td>1028</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>23.0</td>
+        <td>1038</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>23.0</td>
+        <td>920</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>23.0</td>
+        <td>935</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>23.0</td>
+        <td>924</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>23.0</td>
+        <td>839</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>23.0</td>
+        <td>843</td>
+        <td>935.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>24.0</td>
+        <td>730</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>24.0</td>
+        <td>632</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>24.0</td>
+        <td>775</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>24.0</td>
+        <td>719</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>24.0</td>
+        <td>797</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>24.0</td>
+        <td>903</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>24.0</td>
+        <td>996</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>24.0</td>
+        <td>828</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>24.0</td>
+        <td>831</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>24.0</td>
+        <td>864</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>24.0</td>
+        <td>856</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>24.0</td>
+        <td>756</td>
+        <td>807.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>25.0</td>
+        <td>1664</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>25.0</td>
+        <td>1631</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>25.0</td>
+        <td>1941</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>25.0</td>
+        <td>1747</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>25.0</td>
+        <td>1891</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>25.0</td>
+        <td>1929</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>25.0</td>
+        <td>1942</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>25.0</td>
+        <td>1856</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>25.0</td>
+        <td>1806</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>25.0</td>
+        <td>1755</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>25.0</td>
+        <td>1593</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>25.0</td>
+        <td>1611</td>
+        <td>1780.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>26.0</td>
+        <td>541</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>26.0</td>
+        <td>477</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>26.0</td>
+        <td>625</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>26.0</td>
+        <td>541</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>26.0</td>
+        <td>600</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>26.0</td>
+        <td>567</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>26.0</td>
+        <td>643</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>26.0</td>
+        <td>544</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>26.0</td>
+        <td>561</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>26.0</td>
+        <td>564</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>26.0</td>
+        <td>485</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>26.0</td>
+        <td>529</td>
+        <td>556.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>27.0</td>
+        <td>499</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>27.0</td>
+        <td>521</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>27.0</td>
+        <td>536</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>27.0</td>
+        <td>483</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>27.0</td>
+        <td>612</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>27.0</td>
+        <td>563</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>27.0</td>
+        <td>563</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>27.0</td>
+        <td>552</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>27.0</td>
+        <td>488</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>27.0</td>
+        <td>509</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>27.0</td>
+        <td>452</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>27.0</td>
+        <td>414</td>
+        <td>516.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>28.0</td>
+        <td>728</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>28.0</td>
+        <td>587</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>28.0</td>
+        <td>797</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>28.0</td>
+        <td>712</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>28.0</td>
+        <td>828</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>28.0</td>
+        <td>873</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>28.0</td>
+        <td>882</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>28.0</td>
+        <td>887</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>28.0</td>
+        <td>765</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>28.0</td>
+        <td>839</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>28.0</td>
+        <td>818</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>28.0</td>
+        <td>705</td>
+        <td>785.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>29.0</td>
+        <td>761</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>29.0</td>
+        <td>714</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>29.0</td>
+        <td>901</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>29.0</td>
+        <td>898</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>29.0</td>
+        <td>874</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>29.0</td>
+        <td>960</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>29.0</td>
+        <td>913</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>29.0</td>
+        <td>943</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>29.0</td>
+        <td>895</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>29.0</td>
+        <td>893</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>29.0</td>
+        <td>782</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>29.0</td>
+        <td>862</td>
+        <td>866.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>32.0</td>
+        <td>630</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>32.0</td>
+        <td>544</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>32.0</td>
+        <td>664</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>32.0</td>
+        <td>565</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>32.0</td>
+        <td>601</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>32.0</td>
+        <td>675</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>32.0</td>
+        <td>680</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>32.0</td>
+        <td>779</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>32.0</td>
+        <td>686</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>32.0</td>
+        <td>753</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>32.0</td>
+        <td>621</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>32.0</td>
+        <td>581</td>
+        <td>648.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>43.0</td>
+        <td>862</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>43.0</td>
+        <td>818</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>43.0</td>
+        <td>938</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>43.0</td>
+        <td>927</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>43.0</td>
+        <td>1030</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>43.0</td>
+        <td>1088</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>43.0</td>
+        <td>1180</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>43.0</td>
+        <td>1107</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>43.0</td>
+        <td>954</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>43.0</td>
+        <td>872</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>43.0</td>
+        <td>938</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>43.0</td>
+        <td>906</td>
+        <td>968.3333333333333333</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>44.0</td>
+        <td>563</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>44.0</td>
+        <td>500</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>44.0</td>
+        <td>617</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>44.0</td>
+        <td>700</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>44.0</td>
+        <td>666</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>44.0</td>
+        <td>654</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>44.0</td>
+        <td>625</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>44.0</td>
+        <td>625</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>44.0</td>
+        <td>513</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>44.0</td>
+        <td>551</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>44.0</td>
+        <td>611</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>44.0</td>
+        <td>624</td>
+        <td>604.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>46.0</td>
+        <td>553</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>46.0</td>
+        <td>516</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>46.0</td>
+        <td>596</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>46.0</td>
+        <td>522</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>46.0</td>
+        <td>644</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>46.0</td>
+        <td>616</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>46.0</td>
+        <td>607</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>46.0</td>
+        <td>522</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>46.0</td>
+        <td>517</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>46.0</td>
+        <td>551</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>46.0</td>
+        <td>484</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>46.0</td>
+        <td>422</td>
+        <td>545.8333333333333333</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>49.0</td>
+        <td>743</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>49.0</td>
+        <td>630</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>49.0</td>
+        <td>751</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>49.0</td>
+        <td>827</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>49.0</td>
+        <td>857</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>49.0</td>
+        <td>857</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>49.0</td>
+        <td>894</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>49.0</td>
+        <td>744</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>49.0</td>
+        <td>706</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>49.0</td>
+        <td>715</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>49.0</td>
+        <td>679</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>49.0</td>
+        <td>634</td>
+        <td>753.0833333333333333</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>61.0</td>
+        <td>495</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>61.0</td>
+        <td>489</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>61.0</td>
+        <td>577</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>61.0</td>
+        <td>517</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>61.0</td>
+        <td>571</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>61.0</td>
+        <td>587</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>61.0</td>
+        <td>661</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>61.0</td>
+        <td>653</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>61.0</td>
+        <td>606</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>61.0</td>
+        <td>577</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>61.0</td>
+        <td>576</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>61.0</td>
+        <td>514</td>
+        <td>568.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>66.0</td>
+        <td>796</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>66.0</td>
+        <td>626</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>66.0</td>
+        <td>823</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>66.0</td>
+        <td>711</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>66.0</td>
+        <td>792</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>66.0</td>
+        <td>761</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>66.0</td>
+        <td>775</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>66.0</td>
+        <td>751</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>66.0</td>
+        <td>695</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>66.0</td>
+        <td>658</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>66.0</td>
+        <td>603</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>66.0</td>
+        <td>607</td>
+        <td>716.5000000000000000</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>67.0</td>
+        <td>833</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>67.0</td>
+        <td>720</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>67.0</td>
+        <td>1025</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>67.0</td>
+        <td>834</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>67.0</td>
+        <td>881</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>67.0</td>
+        <td>917</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>67.0</td>
+        <td>942</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>67.0</td>
+        <td>848</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>67.0</td>
+        <td>763</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>67.0</td>
+        <td>854</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>67.0</td>
+        <td>716</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>67.0</td>
+        <td>658</td>
+        <td>832.5833333333333333</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>68.0</td>
+        <td>741</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>68.0</td>
+        <td>641</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>68.0</td>
+        <td>823</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>68.0</td>
+        <td>752</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>68.0</td>
+        <td>827</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>68.0</td>
+        <td>871</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>68.0</td>
+        <td>846</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>68.0</td>
+        <td>804</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>68.0</td>
+        <td>766</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>68.0</td>
+        <td>765</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>68.0</td>
+        <td>667</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>68.0</td>
+        <td>596</td>
+        <td>758.2500000000000000</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>69.0</td>
+        <td>642</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>69.0</td>
+        <td>664</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>69.0</td>
+        <td>726</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>69.0</td>
+        <td>719</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>69.0</td>
+        <td>751</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>69.0</td>
+        <td>774</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>69.0</td>
+        <td>908</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>69.0</td>
+        <td>719</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>69.0</td>
+        <td>727</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>69.0</td>
+        <td>758</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>69.0</td>
+        <td>688</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>69.0</td>
+        <td>660</td>
+        <td>728.0000000000000000</td>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>71.0</td>
+        <td>781</td>
+        <td>785.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>71.0</td>
+        <td>743</td>
+        <td>785.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>71.0</td>
+        <td>857</td>
+        <td>785.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>71.0</td>
+        <td>801</td>
+        <td>785.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>71.0</td>
+        <td>876</td>
+        <td>785.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>71.0</td>
+        <td>807</td>
+        <td>785.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>71.0</td>
+        <td>847</td>
+        <td>785.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>71.0</td>
+        <td>842</td>
+        <td>785.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>71.0</td>
+        <td>683</td>
+        <td>785.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>71.0</td>
+        <td>733</td>
+        <td>785.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>71.0</td>
+        <td>717</td>
+        <td>785.4166666666666667</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>71.0</td>
+        <td>738</td>
+        <td>785.4166666666666667</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span> 
+
+    SELECT DISTINCT community_area
+    FROM (
+    
+    SELECT * 
+    FROM(
+    SELECT *, AVG(number_of_crimes) OVER (PARTITION BY community_area) as average
+    FROM (
+    SELECT EXTRACT(MONTH FROM case_date) as month, community_area, count(*) as number_of_crimes
+    FROM crime
+    JOIN crime_report
+    USING(crime_id) 
+    JOIN location
+    USING(location_id)
+    GROUP BY community_area, month
+    ) AS s1
+    ) AS s2
+    WHERE average &gt; 500 ) as s4
+    ;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+22 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>community_area</th>
+    </tr>
+    <tr>
+        <td>6.0</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+    </tr>
+    <tr>
+        <td>19.0</td>
+    </tr>
+    <tr>
+        <td>22.0</td>
+    </tr>
+    <tr>
+        <td>23.0</td>
+    </tr>
+    <tr>
+        <td>24.0</td>
+    </tr>
+    <tr>
+        <td>25.0</td>
+    </tr>
+    <tr>
+        <td>26.0</td>
+    </tr>
+    <tr>
+        <td>27.0</td>
+    </tr>
+    <tr>
+        <td>28.0</td>
+    </tr>
+    <tr>
+        <td>29.0</td>
+    </tr>
+    <tr>
+        <td>32.0</td>
+    </tr>
+    <tr>
+        <td>43.0</td>
+    </tr>
+    <tr>
+        <td>44.0</td>
+    </tr>
+    <tr>
+        <td>46.0</td>
+    </tr>
+    <tr>
+        <td>49.0</td>
+    </tr>
+    <tr>
+        <td>61.0</td>
+    </tr>
+    <tr>
+        <td>66.0</td>
+    </tr>
+    <tr>
+        <td>67.0</td>
+    </tr>
+    <tr>
+        <td>68.0</td>
+    </tr>
+    <tr>
+        <td>69.0</td>
+    </tr>
+    <tr>
+        <td>71.0</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The above list is all the community areas that have an average more than 500.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="What-is-the-arrest-rate-for-domestic-battery?">
+<a class="anchor" href="#What-is-the-arrest-rate-for-domestic-battery?" aria-hidden="true"><span class="octicon octicon-link"></span></a>What is the arrest rate for domestic battery?<a class="anchor-link" href="#What-is-the-arrest-rate-for-domestic-battery?"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
+    SELECT (arrested_domestic_battery::float/total_domestic_battery::float)::float as Domestic_Battery_Rate
+    FROM(
+    SELECT arrested_domestic_battery, total_domestic_battery, ROW_NUMBER() OVER (PARTITION BY arrested_domestic_battery)
+    FROM ( select *
+    FROM (SELECT COUNT(*) as arrested_domestic_battery
+    FROM crime
+    JOIN crime_report
+    USING (crime_id)
+    WHERE domestic = True AND arrest = True AND primary_desc LIKE '%BATTERY%') as s1
+    ) as s2
+    NATURAL JOIN (SELECT total_domestic_battery, ROW_NUMBER() OVER (PARTITION BY total_domestic_battery)
+    FROM ( select *
+    FROM (SELECT COUNT(*) as total_domestic_battery
+    FROM crime
+    JOIN crime_report
+    USING (crime_id)
+    WHERE domestic = True AND primary_desc LIKE '%BATTERY%') as s1
+    ) as s2
+    ) as s3 ) as s4
+    ;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+1 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>domestic_battery_rate</th>
+    </tr>
+    <tr>
+        <td>0.205153101917675</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The arrest rate for domestic battery is 0.205153101917675, or 20.5 percent.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="What-are-the-five-most-common-crimes-in-Chicago?">
+<a class="anchor" href="#What-are-the-five-most-common-crimes-in-Chicago?" aria-hidden="true"><span class="octicon octicon-link"></span></a>What are the five most common crimes in Chicago?<a class="anchor-link" href="#What-are-the-five-most-common-crimes-in-Chicago?"> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
+   
+    SELECT crime_id, primary_desc as primary_type, description, count(*)
+    FROM crime
+    JOIN crime_report
+    USING(crime_id)
+    GROUP BY crime_id
+    ORDER BY count desc
+    limit 5; 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+5 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>crime_id</th>
+        <th>primary_type</th>
+        <th>description</th>
+        <th>count</th>
+    </tr>
+    <tr>
+        <td>53</td>
+        <td>THEFT</td>
+        <td>$500 AND UNDER</td>
+        <td>29533</td>
+    </tr>
+    <tr>
+        <td>37</td>
+        <td>BATTERY</td>
+        <td>DOMESTIC BATTERY SIMPLE</td>
+        <td>28752</td>
+    </tr>
+    <tr>
+        <td>9</td>
+        <td>BATTERY</td>
+        <td>SIMPLE</td>
+        <td>20544</td>
+    </tr>
+    <tr>
+        <td>64</td>
+        <td>NARCOTICS</td>
+        <td>POSS: CANNABIS 30GMS OR LESS</td>
+        <td>17737</td>
+    </tr>
+    <tr>
+        <td>20</td>
+        <td>CRIMINAL DAMAGE</td>
+        <td>TO VEHICLE</td>
+        <td>16505</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Fetch-two-time-series-for-crime-count-and-arrest-count-per-month-from-the-database.-Plot-these-two-time-series-in-a-single-plot.">
+<a class="anchor" href="#Fetch-two-time-series-for-crime-count-and-arrest-count-per-month-from-the-database.-Plot-these-two-time-series-in-a-single-plot." aria-hidden="true"><span class="octicon octicon-link"></span></a>Fetch two time series for crime count and arrest count per month from the database. Plot these two time series in a single plot.<a class="anchor-link" href="#Fetch-two-time-series-for-crime-count-and-arrest-count-per-month-from-the-database.-Plot-these-two-time-series-in-a-single-plot."> </a>
+</h3>
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%</span><span class="k">sql</span>
+SELECT *
+    FROM(
+    SELECT EXTRACT(MONTH FROM case_date) as month,
+    count(case_id) as crime_count
+    FROM crime_report
+    GROUP BY month
+    ) as s1
+    NATURAL JOIN (
+        SELECT EXTRACT(MONTH FROM case_date) as month,
+        count(*) as arrest_count
+        FROM crime_report
+        WHERE arrest = True
+        GROUP BY month
+    ) as s2
+    ORDER BY month
+    
+    ;
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre> * postgres://dlr6w3:***@pgsql.dsa.lan/dsa_student
+12 rows affected.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<table>
+    <tr>
+        <th>month</th>
+        <th>crime_count</th>
+        <th>arrest_count</th>
+    </tr>
+    <tr>
+        <td>1.0</td>
+        <td>26295</td>
+        <td>7569</td>
+    </tr>
+    <tr>
+        <td>2.0</td>
+        <td>23879</td>
+        <td>7628</td>
+    </tr>
+    <tr>
+        <td>3.0</td>
+        <td>28568</td>
+        <td>8406</td>
+    </tr>
+    <tr>
+        <td>4.0</td>
+        <td>27184</td>
+        <td>7408</td>
+    </tr>
+    <tr>
+        <td>5.0</td>
+        <td>30104</td>
+        <td>7900</td>
+    </tr>
+    <tr>
+        <td>6.0</td>
+        <td>31086</td>
+        <td>8042</td>
+    </tr>
+    <tr>
+        <td>7.0</td>
+        <td>31983</td>
+        <td>8444</td>
+    </tr>
+    <tr>
+        <td>8.0</td>
+        <td>30046</td>
+        <td>7709</td>
+    </tr>
+    <tr>
+        <td>9.0</td>
+        <td>27764</td>
+        <td>7277</td>
+    </tr>
+    <tr>
+        <td>10.0</td>
+        <td>27974</td>
+        <td>7225</td>
+    </tr>
+    <tr>
+        <td>11.0</td>
+        <td>26038</td>
+        <td>6543</td>
+    </tr>
+    <tr>
+        <td>12.0</td>
+        <td>25228</td>
+        <td>6468</td>
+    </tr>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="s2">"""</span>
+<span class="s2">            SELECT *</span>
+<span class="s2">    FROM(</span>
+<span class="s2">    SELECT EXTRACT(MONTH FROM case_date) as month,</span>
+<span class="s2">    count(case_id) as crime_count</span>
+<span class="s2">    FROM crime_report</span>
+<span class="s2">    GROUP BY month</span>
+<span class="s2">    ) as s1</span>
+<span class="s2">    NATURAL JOIN (</span>
+<span class="s2">        SELECT EXTRACT(MONTH FROM case_date) as month,</span>
+<span class="s2">        count(*) as arrest_count</span>
+<span class="s2">        FROM crime_report</span>
+<span class="s2">        WHERE arrest = True</span>
+<span class="s2">        GROUP BY month</span>
+<span class="s2">    ) as s2</span>
+<span class="s2">    ORDER BY month</span>
+<span class="s2">            """</span><span class="p">,</span> <span class="n">con</span> <span class="o">=</span> <span class="n">connection_string</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>month</th>
+      <th>crime_count</th>
+      <th>arrest_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.0</td>
+      <td>26295</td>
+      <td>7569</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2.0</td>
+      <td>23879</td>
+      <td>7628</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3.0</td>
+      <td>28568</td>
+      <td>8406</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.0</td>
+      <td>27184</td>
+      <td>7408</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5.0</td>
+      <td>30104</td>
+      <td>7900</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">month</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">df</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="o">*</span><span class="n">df</span><span class="o">.</span><span class="n">month</span><span class="p">]</span>
+<span class="n">counts</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">df</span><span class="o">.</span><span class="n">crime_count</span><span class="p">,</span> <span class="o">*</span><span class="n">df</span><span class="o">.</span><span class="n">arrest_count</span><span class="p">]</span>
+<span class="n">category</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'crime'</span><span class="p">,</span><span class="s1">'crime'</span><span class="p">,</span><span class="s1">'crime'</span><span class="p">,</span><span class="s1">'crime'</span><span class="p">,</span><span class="s1">'crime'</span><span class="p">,</span><span class="s1">'crime'</span><span class="p">,</span><span class="s1">'crime'</span><span class="p">,</span><span class="s1">'crime'</span><span class="p">,</span><span class="s1">'crime'</span><span class="p">,</span><span class="s1">'crime'</span><span class="p">,</span><span class="s1">'crime'</span><span class="p">,</span><span class="s1">'crime'</span><span class="p">,</span> <span class="s1">'arrest'</span><span class="p">,</span><span class="s1">'arrest'</span><span class="p">,</span><span class="s1">'arrest'</span><span class="p">,</span><span class="s1">'arrest'</span><span class="p">,</span><span class="s1">'arrest'</span><span class="p">,</span><span class="s1">'arrest'</span><span class="p">,</span><span class="s1">'arrest'</span><span class="p">,</span><span class="s1">'arrest'</span><span class="p">,</span><span class="s1">'arrest'</span><span class="p">,</span><span class="s1">'arrest'</span><span class="p">,</span><span class="s1">'arrest'</span><span class="p">,</span><span class="s1">'arrest'</span><span class="p">]</span>
+<span class="n">crime_arrest</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+                <span class="s1">'month'</span><span class="p">:</span> <span class="n">month</span><span class="p">,</span>
+                <span class="s1">'category'</span><span class="p">:</span><span class="n">category</span><span class="p">,</span>
+                <span class="s1">'count'</span><span class="p">:</span><span class="n">counts</span>
+                    
+                    
+<span class="p">})</span>
+<span class="n">crime_arrest</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>month</th>
+      <th>category</th>
+      <th>count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.0</td>
+      <td>crime</td>
+      <td>26295</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2.0</td>
+      <td>crime</td>
+      <td>23879</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3.0</td>
+      <td>crime</td>
+      <td>28568</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4.0</td>
+      <td>crime</td>
+      <td>27184</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5.0</td>
+      <td>crime</td>
+      <td>30104</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ggplot</span><span class="p">(</span><span class="n">crime_arrest</span><span class="p">)</span> <span class="o">+</span> <span class="n">geom_line</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="s1">'month'</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="s1">'count'</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">'category'</span><span class="p">))</span> <span class="o">+</span> <span class="n">scale_x_discrete</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span><span class="s2">"Month"</span><span class="p">,</span> <span class="n">limits</span><span class="o">=</span> <span class="p">(</span><span class="s2">"Jan."</span><span class="p">,</span><span class="s2">"Feb."</span><span class="p">,</span><span class="s2">"Mar."</span><span class="p">,</span> <span class="s2">"Apr."</span><span class="p">,</span><span class="s2">"May"</span><span class="p">,</span><span class="s2">"Jun."</span><span class="p">,</span><span class="s2">"Jul."</span><span class="p">,</span><span class="s2">"Aug."</span><span class="p">,</span><span class="s2">"Sept."</span><span class="p">,</span><span class="s2">"Oct."</span><span class="p">,</span> <span class="s2">"Nov."</span><span class="p">,</span> <span class="s2">"Dec."</span><span class="p">))</span> <span class="o">+</span> <span class="n">ylab</span><span class="p">(</span><span class="s1">'Count'</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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8dRTT2EYBoZhcM011+SPP/XUUwwbNgy/30/79u254IILiEajDZ7/gw8+YNSoUfh8Pvr06cPixYuZOHEio0ePbnC/l19+meHDh+P3+ykvL+ecc86huro6f3zdunUYhsHChQs577zzaNeuHYcddhi33XYbgUCAurq6Buf78MMPMQyDFStWFOid3DNXsz2TiIiISBuzatUqjjnmGA4//HD+/Oc/U1JSwptvvkllZSUAmzZt4sorr6RLly5s3ryZm2++maOOOop///vfuFwu7rjjDqZNm0YgEGD+/PkAdO3aFYBHHnmEU089lbPPPpu5c+eyceNGrrjiCmpqali6dCmwbUR1zJgxlJSUcP/99wMwd+5ctm7dSu/evfM533rrLX7wgx8wevRoHn74Yb7++muuuOIKPvjgA1599VWcTmf+vnPmzGHcuHE88MAD5HI5hg0bxuzZs3nggQeYOXNm/n5//etfOeCAAzj++OOb9k3eiYqtiIiISBOZPXs2Bx54IC+88EK+HI4ZMyZ//K9//Wv+42w2yxFHHEHXrl154YUXGDNmDP3796eoqIhQKMThhx+ev69pmlx22WWceuqp/PnPf87f3rlzZ8aOHcsvf/lLBgwYwD333MPXX3/NqlWrqKioAOCQQw7hwAMPbFBsr7/+ejp16sSTTz6J2+0GoFu3bhx//PGsWLGCk046KX/f73//+w2eE2Dy5Mn89a9/zRfbTCbDokWL+O///u8GpbipaSqCiIiISBOIxWKsXr2as84661vL3dNPP83w4cMpLi7G5XLlR2M/+eST7zz3J598wvr165kyZQqZTCb/56ijjsLhcPDmm28C8MYbbzBw4MB8qQWoqKhg0KBBDc73yiuvMGHChHypBfIjvf/4xz8a3HfcuHG75DnvvPP45z//yQcffADAihUr2LRpE+ecc853vo5CU7EVERERaQI1NTXkcjm6dOmy2+NvvPEG48ePp0uXLixatIjXXnuN1atXA5BIJL7z3FVVVQBMmjQJt9ud/xMIBMhms2zYsAGAjRs30r59+10e36FDh12yduzYcZf7dezYscE82x23fdOoUaM46KCD+Mtf/gJsG4keNWpUg1Hh5qCpCCIiIiJNoKSkBIfDwZdffrnb448++ijFxcU89NBDOBzbxhrXr1+/V+cuKysD4Pbbb2fYsGG7HN9Rpjt37sy77767y/FNmzYRDocbnG/Tpk273O/rr7/OP9cOhmHsNtO5557LvHnz+PnPf85TTz3VYJpFc2nUiG2vXr147733dnvsX//6F7169dqvUCIiIiKtXTAY5IgjjuC+++4jm83ucjwej+N2uxsUxcWLF+9yP4/Hs8sI7sEHH0zXrl1Zs2YNhxxyyC5/dhTbQw89lP/93/9l7dq1+ceuW7dulx43cuRIHnvsMTKZTP625557jq1btzJy5Mi9er1nnXUWtbW1nHHGGQQCASZPnrxXjyukRo3Yrlu3jmQyudtjsVgsP/wtIiIi0pb97ne/45hjjuG4447jJz/5CaWlpbz99tuUl5fzgx/8gFtvvZWf/vSnTJo0iddee41Fixbtco5+/fpx77338sQTT9C5c2e6dOlCly5duOWWWzj99NOJRqOMGzeOYDDI+vXreeqpp/jtb39L3759Ofvss7n++us58cQTmTt3LgDXXHMNnTp1yo8SA1x11VUMHz6cE088kZ/+9Kf5XREOO+wwxo4du1evtX379kyYMIGHH36YmTNn4vf7C/Mm7oO9HrFNJBJUV1ezZcsWAOrq6qiurm7w58svv+Sxxx771rkkIiIiIm3JyJEjefHFFzEMgxkzZnDyySfz6KOP0qNHD8aOHcuNN97I448/zvjx43n55Zd58skndznH7NmzGTFiBGeeeSaHHnood911FwA/+tGPWLFiBR999BGnnXYa48eP5+abb6aioiI/D9bv97Ny5UrKyso444wzmD17Npdeeil9+vShuLg4/xxDhw5l5cqV1NXVccopp3D55Zczbtw4nn766X3a1WDSpEkAzb5obAfDNE1zb+44d+5cfvOb3+zVSa+55hp++ctf7lcwK9sxYbspOJ1OSktLqamp2e2vLazA6hmtng+UsRCsng+UsRCsng+UsRCaK195eXmTnbs1qa6uplevXsyaNYtf//rXBT33mWeeyTvvvMP7779f0PPurb2eijBx4kQqKiowTZNzzjmHq6++epeVbh6Ph379+vH973+/4EFFREREZN/deOONdOzYkYqKCjZu3Mj8+fPJZrMFHVV9//33effdd1m6dCl33HFHwc67r/a62A4aNCi/55lhGIwbN04/+YiIiIhYnMPh4LrrruOLL77A5XIxbNgwXnjhBbp161aw5zjppJPYvHkzZ511VotNQ4BGLh4766yz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2WefZdmyZdx55537HUxERERE9s59993HLbfcwrp16wCor6+nqqoKr9dLt27ddhmALC8vb7Cuad26dTz++OMNdrrKZDJMnz4dgEcffZTrrruOPn36cOCBB/LrX/86P4XBShpVbAcNGrTb20ePHk0gEODOO+/k6KOP3q9gIiIiIrJn69ev59xzz+X5559nxIgROJ1OBg8enP/N+jdL7e5u6969O1OnTmXhwoW7fY4hQ4awfPlystksDz74IJMnT2bLli27PXdLKvgSuOHDh3PTTTcV+rQiIiIirUbH2+7e85320bftXLBjz/4dF4+67777+Ne//rVP5542bRpDhw7liSee4IQTTiCXy/HOO+9QVFRE7969efDBBznxxBMpLS2lpKQEwzBwOp20b98eh8PBZ599xoABA/bvBRZAwXdFeOyxxygrKyv0aUVERERkN/r378/ll1/OiBEj6NixI++++25+t4K91bVrV1asWMGtt95Kx44d6dKlC3PmzCGZTAKwZMkSevfuTTgc5he/+AUPPfQQPp+PQCDA1VdfzdFHH01JSQnPPvtsU7zEvWaYO68A20vjx4/f5bZUKsXHH39MZWUl8+bN49JLLy1IQCva+fK6heZ0OiktLaWmpsayC/CsntHq+UAZC8Hq+UAZC8Hq+UAZC6G58u28J31Ti0QiBT+ny+Xa7RVS5f80aipCXV3dLnMqfD4fxx13HJMnT+b4448vSDgRERERkb3VqGL74osvFjiGiIiIiMj+2e85tvF4nI0bNxKPxwuRR0RERESkURpdbJ988kkOPfRQwuEwXbt2JRwOc+ihh7JixYpC5hMRERER2SuNKraPPfYYEyZMwOPxcMstt7BkyRJuvvlmvF4v48eP5/HHHy90ThERERGR79SoObZz587ltNNO4/77729w+yWXXMK0adO45pprmDBhQkECioiIiIjsjUYV248++ogbb7xxt8emT5+ev86wiIiISFsUDodbOkKb1KipCGVlZXz88ce7Pfbxxx/rAg0iIiIi0uwaNWJ76qmncuWVV+L3+5k8eTIlJSXU1tby8MMPc/XVV3PeeecVOqeIiIiIyHdqVLG94YYbWL9+Peeffz4zZ87E7XaTTqcxTZOTTz6Z3/72t4XOKSIiItJq6MpjLaNRxdbr9bJs2TLef/99XnnlFWpqaigrK2PkyJEMHDiw0BlFRERERPZor+fY/uc//2Ho0KEN9qkdOHAgP/nJT7jqqqu44IIL+Pzzzxk6dChr1qxpkrAiIiIiIt9mr4vtzTffTCgUYuzYsd96nxNOOIGioiLmz59fkHAiIiIiIntrr4vtypUrOeecc/Z4v3POOYdnn312v0KJiIiIiOyrvS62X3zxBb17997j/Xr27MkXX3yxX6FEREREpPBCoRCffPJJS8doMnu9eCwUCrF58+Y93q+qqopgMLhfoURERESk8Orr61s6QpPa6xHbQw45hAcffHCP91u6dCmHHHLIfoUSERERkcLJZDItHaFZ7HWxvfDCC3nooYeYO3cu2Wx2l+O5XI7f/OY3PPzww1x00UUFDSkiIiIiu/fll18ydepUOnbsSGlpKRMnTmTdunUYhsHChQvp2bMn//Vf/wWAYRh89NFHAMyYMYMLLriAiRMnEgqFGDx4MJ999hnz5s2jU6dOdO7cucGgZiqV4sorr6Rnz56Ul5dz+umnU1NT0yKv+dvsdbEdP348s2fPZu7cuXTr1o3p06dz1VVXcfXVV3PmmWfSrVs35s6dy+WXX85JJ53UlJlFREREBMhms5x00kmUlZXxn//8h02bNjFr1qz88WeeeYb33nuPt956a7ePX7p0KVdccQU1NTX07duXH/zgB8TjcTZs2MAf//hHZs6cSTweB2DOnDm8/fbbvP7662zYsAGPx2O5wUzDNE1zXx6wYsUKbr75Zl599VWSySQAPp+PESNG8POf/5wTTjihSYJaSVVVVZOd2+l0UlpaSk1NzW5Hxq3A6hmtng+UsRCsng+UsRCsng+UsRCaK195eXmTnfubpv7r04Kfc0jQx+yeXRvctnr1asaOHctXX32Fx+PJ375u3Tp69uzJhx9+yMEHH5y/3TCM/G0zZswAYOHChQAsX76cM888k9raWpxOJ7DtolxvvfUWAwYMIBQK8eabb9KvXz8ANmzYQO/evYnH4/n7t7R9vvLY2LFjGTt2LNlsli1btgDQrl07y7wgERERkbaisrKS7t27Nyi1O+vRo8d3Pr5Tp075jwOBAOXl5Q06nd/vp76+ns2bNxOLxTjiiCMaPN7hcPDVV19xwAEH7MerKJxGXVIXtv101aFDh0JmEREREZF90L17dyorK0mn07jd7l2OG4ZRkOcpLy/H7/fz7rvvUlFRUZBzNoVGF1sRERER2b27e3Qs+Dldrl1r26GHHkqPHj34+c9/zm9/+1t8Ph+vvvrqHkdq95XD4WDmzJnMmjWLO+64g86dO7Np0yZee+01JkyYUNDn2h97vXhMRERERKzF6XTyxBNPsHHjRnr16kXHjh354x//2CTP9bvf/Y5BgwZx5JFHEg6HGT58OP/85z+b5Lkaa58Xj4kWj1k9o9XzgTIWgtXzgTIWgtXzgTIWgh0Xj0UikYKf0+Vy4ff7C35eO9GIrYiIiIjYgoqtiIiIiNiCiq2IiIiI2IKKrYiIiIjYgoqtiIiIiNiC9rEVERERKbCmuCKrw6HxyD1RsRUREREpsEAg0NIR2iRVfxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFV0sHaI08Hg9er7dJzm0YBgDBYBDTNJvkOfaX1TNaPR8oYyFYPR8oYyFYPR8oYyFYPZ+0Hiq2jZBKpUilUk1ybqfTicfjIRqNks1mm+Q59pfVM1o9HyhjIVg9HyhjIVg9HyhjITRXvqYalBLr0FQEEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQUVWxERERGxBRVbEREREbEFFVsRERERsQVXSwd48skneeGFF1i3bh1HHHEEl19+ef7Y+vXrue2221i3bh0dO3bk/PPPZ9CgQfnjq1at4t5776W6upqDDz6Yiy++mA4dOuSP33///TzzzDNkMhlGjBjBj3/8Y9xuNwD19fUsWLCAt99+G7/fz6RJk5gwYULzvXARERERKagWH7EtKytjypQpjBkzpsHtmUyGa6+9lsMOO4wHHniAqVOncsMNN7B161YANmzYwB/+8AcuuOACFi9eTEVFBfPmzcs/fuXKlbz00kvMnz+fu+66i88//5zFixfnj995552k02nuuecerrnmGh555BHeeuut5nnRIiIiIlJwLV5shw8fzuGHH05RUVGD299//32SySSTJ0/G7XZz5JFH0r17d1atWgXAiy++yJAhQxg8eDBer5fTTz+dtWvXUllZCcDzzz/PhAkT6NSpE0VFRUydOpW///3vACQSCVatWsX06dMJBAJUVFQwZswYnnvuueZ98SIiIiJSMC1ebL9NZWUlFRUVOBz/F7FXr16sX78e2DZNoWfPnvljgUCATp065Y9XVlbSq1evBo+tra2lpqaGL774AtM06dGjR/54z54986VYRERERFqfFp9j+23i8TjBYLDBbcFgkE2bNgHbRl13dzwej+/2+I6P4/E4iUSCQCDwrY/9pqqqKqqqqvKfOxwO2rdv38hX9t2cTmeDv63I6hmtng+UsRCsng+UsRCsng+UsRCsnk9aD8sWW7/fTzQabXBbNBrF7/cD4PP5iMViDY7HYrEGx3d+/I77+v1+4vH4LiV258d+07Jly7j77rvzn8+YMYOLLrro/7d35+FR1Ycax7/nnJkJCUnIZI8sIUT2RaqCrIIsWouCBYoEFKlSUHopeEFt4d5WrdqLK7aitkJvLxCMFKjV+5RbZBOtKyqKIkIggICEbCRAQjLLuX9MGAiLoiSZYXw/z5OHmTlnJu8cJsk7v/mdc77jMzs/p0/NCEfhnjHc84Ey1odwzwfKWB/CPR8oY30I93wS/sK22LZq1YoVK1bg9/uD0xEK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69YFR6ZP/0NQX9auXcvAgQMZMGAAe/bsYefOncFl7733HpdffjlLly5l5MiRPPzww3VGfhoj34Vsxx49enD48GF27NgRXH/9+vV17t/Y3n//fa644gpyc3MZNmwYv//970OWJVx83Wvw6zz22GO0bNmSxYsXM2XKFNauXVtvmZo3b47T6eTxxx/n/fffrzNFoqCggCeeeIJJkyaRm5vL+PHjeeSRR6ioqAius2bNGqZMmcLixYvJyMjgySefBODRRx8F4KmnnmLZsmX1UmoBtm3bRnV1NX369Klzu2ma9OnTh48++oj8/HweffRRcnJyyM3NZd68ebRu3ZoePXowevRo+vTpw7Jlyxqk1AK43W5uuOEGFi9efMayP/3pT5SUlPDss8/y5JNP8vnnn5OXlwfAwIEDef3114PrlpeX8/HHHzNgwIAGyXmqpk2b0r17dz777DPee+89cnNzmTVrFkuWLGHgwIH89re/xePx4PP5eOihh4iNjeWPf/wjixcvDr5BE/k6KrYhEBsbS9++fYmKiiI6OprRo0fz2Wef1Vln8ODBZGZm4nQ6ufrqq8/7D9OFWLhwYXDu209/+lPy8/MpLi7mlltuweVykZSUxE033cTGjRuD94mLi2P06NE4HA5+8IMfcPnll/PGG280WMZBgwaxbt06ysvL2bZtG7179w4uO5/tes0119CmTRtM08TpdNZ7vh07drB3714GDBhASkoKnTt3Zs2aNcHlWVlZXHPNNViWxeDBg0lNTeX9999vtHwnfNft6HQ6GThwIOvXrwcCI/qN9QfxXDp06EDv3r2xLItBgwZRXFxcpxB933zTa/BcioqK+OKLL5gwYQIul4s2bdrU6/9rTEwMjz76KFFRUTz//PPcdtttzJkzhwMHDvB///d/DB06lE6dOmGaJj169CArK6vO/NuBAweSnZ2Ny+XitttuY+vWrQ16+tWKigri4+NxOM78YNPtdlNRUcHq1au55ppr6NGjB5ZlER8f32BvSM/lxz/+MTt27ODTTz8N3ubz+di4cSMTJ04kNjYWt9tNTk5O8Oe2V69eHDx4kL179wKBT106duxIcnJyo2ROTEzkyJEjrFq1ipEjR9K6dWssy+KHP/whhmHwxRdfsGPHDgoLC5k0aRIxMTE4HI7gp1siX0dTEUKgurqaBQsW8OGHHwZH66qqqvB4PMEy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%0A">
+</div>
+
+</div>
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;ggplot: (8786508849707)&gt;</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    
+
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="dennislrhodes/portfolio"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/portfolio/2022/07/13/Database-Design-Part-3.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/portfolio/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/portfolio/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/portfolio/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Data Science Professional Specializing in GIS and Cloud.</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/dennislrhodes" target="_blank" title="dennislrhodes"><svg class="svg-icon grey"><use xlink:href="/portfolio/assets/minima-social-icons.svg#github"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
